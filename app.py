@@ -2,30 +2,28 @@ import pandas as pd
 from dash import Dash, html, dcc, Input, Output
 import plotly.express as px
 
+# -----------------------------
+# Load and prepare data
+# -----------------------------
 df = pd.read_csv("data/final_output.csv")
 
 df["Date"] = pd.to_datetime(df["Date"])
 df = df.sort_values("Date")
 
-fig = px.line(
-    df,
-    x="Date",
-    y="Sales",
-    color="Region",
-    title="Pink Morsel Sales Over Time",
-    labels={
-        "Date": "Date",
-        "Sales": "Total Sales ($)"
-    }
-)
-
+# -----------------------------
+# Create Dash app
+# -----------------------------
 app = Dash(__name__)
 
+# -----------------------------
+# App Layout
+# -----------------------------
 app.layout = html.Div(
     className="container",
     children=[
         html.H1(
             "Pink Morsel Sales Visualiser",
+            id="app-header",
             className="title"
         ),
 
@@ -36,7 +34,7 @@ app.layout = html.Div(
         ),
 
         dcc.RadioItems(
-            id="region-filter",
+            id="region-picker",
             options=[
                 {"label": "All", "value": "all"},
                 {"label": "North", "value": "north"},
@@ -53,9 +51,12 @@ app.layout = html.Div(
     ]
 )
 
+# -----------------------------
+# Callback
+# -----------------------------
 @app.callback(
     Output("sales-line-chart", "figure"),
-    Input("region-filter", "value")
+    Input("region-picker", "value")
 )
 def update_chart(selected_region):
     if selected_region == "all":
@@ -68,15 +69,17 @@ def update_chart(selected_region):
         x="Date",
         y="Sales",
         color="Region",
+        title="Pink Morsel Sales Over Time",
         labels={
             "Date": "Date",
             "Sales": "Total Sales ($)"
-        },
-        title="Pink Morsel Sales Over Time"
+        }
     )
 
     return fig
 
-
+# -----------------------------
+# Run app
+# -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
